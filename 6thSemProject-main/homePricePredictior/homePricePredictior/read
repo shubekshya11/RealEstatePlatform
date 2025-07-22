@@ -1,0 +1,5 @@
+Is area > 1500?
+   ├── Yes: Is location = city center?
+   │      ├── Yes → Predict ₹8 Cr
+   │      └── No  → Predict ₹6 Cr
+   └── No → Predict ₹3 Cr

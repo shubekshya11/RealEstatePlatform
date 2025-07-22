@@ -1,0 +1,28 @@
+{% autoescape off %}
+Hello {{ user.first_name }},
+
+Your property listing "{{ property.title }}" has been {{ status }}.
+
+{% if status == 'approved' %}
+Congratulations! Your property is now live on our platform. Potential buyers can now view and contact you about your property.
+
+Property Details:
+- Title: {{ property.title }}
+- Price: Rs. {{ property.price }}
+- Location: {{ property.city }}
+- Area: {{ property.area }} Aana
+- Bedrooms: {{ property.bedrooms }}
+- Bathrooms: {{ property.bathrooms }}
+
+You can manage your listing and view inquiries at: {{ protocol }}://{{ domain }}{% url 'user_dashboard' %}
+{% else %}
+We regret to inform you that your property listing has been declined.
+
+Reason: {{ property.decline_reason }}
+
+You can submit a new listing with the required changes at: {{ protocol }}://{{ domain }}{% url 'seller_view' %}
+{% endif %}
+
+Best regards,
+House Price Prediction Team
+{% endautoescape %} 

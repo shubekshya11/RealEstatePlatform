@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+{% block title %}Contact Messages{% endblock %}
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;">
+  <h2 class="mb-3">Contact Messages</h2>
+  <div class="text-center mb-4">
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+  {% if contact_messages %}
+  <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+    <table class="table table-bordered table-hover">
+      <thead class="table-success sticky-top">
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Subject</th>
+          <th>Message</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for msg in contact_messages %}
+        <tr>
+          <td>{{ msg.name }}</td>
+          <td>{{ msg.email }}</td>
+          <td>{{ msg.subject }}</td>
+          <td style="max-width: 300px; overflow-wrap: break-word;">{{ msg.message }}</td>
+          <td>{{ msg.created_at|date:'Y-m-d H:i' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No contact messages found.</p>
+  {% endif %}
+</div>
+
+<style>
+  .table-responsive {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #198754;
+    color: white;
+  }
+  
+  .table > :not(caption) > * > * {
+    padding: 1rem;
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+  
+  .table td {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %} 

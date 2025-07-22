@@ -1,0 +1,37 @@
+{% autoescape off %}
+Hello {{ recipient_name }},
+
+{% if is_seller %}
+You have received a new inquiry about your property "{{ property.title }}" from a potential buyer.
+
+Buyer Details:
+- Name: {{ sender_name }}
+- Email: {{ sender_email }}
+- Message: {{ message }}
+
+You can respond directly to this email to communicate with the buyer.
+
+Property Details:
+- Title: {{ property.title }}
+- Price: Rs. {{ property.price }}
+- Location: {{ property.city }}
+- Area: {{ property.area }} Aana
+
+{% else %}
+Thank you for your interest in the property "{{ property.title }}". Your message has been sent to the seller.
+
+Your Message:
+{{ message }}
+
+The seller will contact you directly at your email address ({{ sender_email }}) to discuss further details.
+
+Property Details:
+- Title: {{ property.title }}
+- Price: Rs. {{ property.price }}
+- Location: {{ property.city }}
+- Area: {{ property.area }} Aana
+{% endif %}
+
+Best regards,
+House Price Prediction Team
+{% endautoescape %} 

@@ -1,0 +1,138 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}Predict House Price{% endblock %}
+
+{% block content %}
+<main class="main">
+  <!-- Page Title -->
+  <div class="page-title" data-aos="fade">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+
+            <h1>House Price Prediction</h1>
+
+            <p class="mb-0">
+              "Estimate the value of a home instantly with our predictive model!"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li class="current">Predict</li>
+        </ol>
+      </div>
+    </nav>
+  </div>
+
+  <section class="section-property section-t4">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 mx-auto">
+          <div class="card">
+            <div class="card-body">
+              <form method="POST" action="{% url 'predict' %}">
+                {% csrf_token %}
+
+                <div class="form-group mb-3">
+
+                  <label for="area">Area (Aana) <span class="text-danger">*</span></label>
+                  <input type="number" step="0.01" class="form-control" id="area" name="area" required value="{{ input_area|default:'' }}" />
+
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="stories">Floors <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="stories" name="stories" required value="{{ input_stories|default:'' }}" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="road_width">Road Width (Feet)</label>
+                    <input type="number" step="0.01" class="form-control" id="road_width" name="road_width" value="{{ input_road_width|default:'' }}" />
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="city">City</label>
+                    <select class="form-control" id="city" name="city">
+                      <option value="" {% if not input_city %}selected{% endif %}>Select City</option>
+                      <option value="Kathmandu" {% if input_city == 'Kathmandu' %}selected{% endif %}>Kathmandu</option>
+                      <option value="Bhaktapur" {% if input_city == 'Bhaktapur' %}selected{% endif %}>Bhaktapur</option>
+                      <option value="Lalitpur" {% if input_city == 'Lalitpur' %}selected{% endif %}>Lalitpur</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="road_type">Road Type</label>
+                    <select class="form-control" id="road_type" name="road_type">
+                      <option value="" {% if not input_road_type %}selected{% endif %}>Select Road Type</option>
+                      <option value="Blacktopped" {% if input_road_type == 'Blacktopped' %}selected{% endif %}>Blacktopped</option>
+                      <option value="Gravelled" {% if input_road_type == 'Gravelled' %}selected{% endif %}>Gravelled</option>
+                      <option value="Soil_Stabilized" {% if input_road_type == 'Soil_Stabilized' %}selected{% endif %}>Soil Stabilized</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">Predict Price</button>
+              </form>
+
+              {% if prediction_svm or prediction_dt %}
+              <div class="alert alert-success mt-4">
+                <h4 class="alert-heading">House Price Prediction Results:</h4>
+
+                {% if prediction_svm %}
+                <p class="mb-1">
+                  <strong>SVM Model:</strong> {{ prediction_svm }}
+                </p>
+                {% endif %}
+
+                
+                <!-- {#
+                {% if prediction_dt %}
+                <p class="mb-1">
+                  <strong>Decision Tree Model:</strong> {{ prediction_dt }}
+                </p>
+                {% endif %}
+                #} -->
+              </div>
+              {% endif %}
+
+              {% if recommended_houses %}
+              <div class="card mt-4">
+                <div class="card-body">
+                  <h5 class="card-title">Similar Houses You Might Like</h5>
+                  <ul class="list-group list-group-flush">
+                    {% for house in recommended_houses %}
+                      <li class="list-group-item">
+                        <strong>{{ house.title|default:'House' }}</strong> - Rs. {{ house.price|floatformat:0 }}<br>
+                        {{ house.location|default:'Location N/A' }} | {{ house.bedrooms|default:'?' }} BR | {{ house.area|default:'?' }} sq.ft.
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+              {% elif prediction_svm %}
+                <div class="mt-4">
+                  <em>No similar houses found in this price range.</em>
+                </div>
+              {% endif %}
+
+              {% if error %}
+              <div class="alert alert-danger mt-4">
+                {{ error }}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

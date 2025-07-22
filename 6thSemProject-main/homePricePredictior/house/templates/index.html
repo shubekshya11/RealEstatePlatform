@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}AawasNepal{% endblock %}</title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+
+    <link
+      rel="icon"
+      href="{% static 'assets/img/house-favicon-svg.svg' %}"
+      type="image/x-icon"
+    />
+
+    <link
+      href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}"
+      rel="stylesheet"
+    />
+
+    <link href="{% static 'assets/css/main.css' %}" rel="stylesheet" />
+    {% block styles %} {% endblock %}
+  </head>
+  <body class="{% block body_class %}index-page{% endblock %}">
+    <!-- Header -->
+    <header id="header" class="header d-flex align-items-center fixed-top">
+      <div
+        class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between"
+      >
+        <a href="{% url 'home' %}" class="logo d-flex align-items-center">
+          <img
+            style="width: 40px; height: 80px"
+            src="{% static 'assets/img/logo.jpeg' %}"
+            alt="House Logo Error"
+          />
+          <h1 class="sitename">Aawas <span>Nepal</span></h1>
+        </a>
+
+        <nav id="navmenu" class="navmenu">
+          <ul>
+            <li>
+              <a
+                href="{% url 'home' %}"
+                style="font-weight: {% if request.path == '/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                >Home</a
+              >
+            </li>
+            <!-- Predict link only for logged-in users -->
+            {% if user.is_authenticated %}
+            <li>
+              <a
+                href="{% url 'predict' %}"
+                style="font-weight: {% if request.path == '/predict/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/predict/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                >Predict</a
+              >
+            </li>
+            {% endif %}
+            <li>
+              <a
+                href="{% url 'buyer' %}"
+                style="font-weight: {% if request.path == '/buyer/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/buyer/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                >Properties</a
+              >
+            </li>
+            {% if not user.is_superuser %}
+              <li>
+                <a
+                  href="{% url 'seller_view' %}"
+                  style="font-weight: {% if request.path == '/seller/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/seller/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                  >Sell</a
+                >
+              </li>
+              <li>
+                <a
+                  href="{% url 'contact' %}"
+                  style="font-weight: {% if request.path == '/contact/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/contact/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                  >Contact</a
+                >
+              </li>
+            {% endif %}
+
+
+            <!-- User Authentication Section -->
+            {% if user.is_authenticated %} {% if user.is_superuser %}
+            <li>
+              <a
+                href="{% url 'admin_dashboard' %}"
+                style="font-weight: {% if request.path == '/admin_dashboard/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/admin_dashboard/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                >Dashboard</a
+              >
+            </li>
+            {% else %}
+            <li>
+              <a
+                href="{% url 'user_dashboard' %}"
+                style="font-weight: {% if request.path == '/user_dashboard/' %}bold{% else %}normal{% endif %}; color: {% if request.path == '/user_dashboard/' %}rgb(46, 202, 106){% else %}inherit{% endif %};"
+                >Dashboard</a
+              >
+            </li>
+            {% endif %}
+
+            <!-- Logout with User Icon -->
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                style="
+                  display: flex;
+                  align-items: center;
+                  color: #fff;
+                  background-color: #28a745;
+                  padding: 8px 12px;
+                  border-radius: 5px;
+                  text-decoration: none;
+                "
+              >
+                <i class="bi bi-person-circle" style="margin-right: 8px"></i>
+                Logout
+              </a>
+            </li>
+            {% else %}
+            <!-- Login with User Icon -->
+            <li>
+              <a
+                href="{% url 'login' %}"
+                style="
+                  display: flex;
+                  align-items: center;
+                  color: #fff;
+                  background-color: #28a745;
+                  padding: 8px 12px;
+                  border-radius: 5px;
+                  text-decoration: none;
+                "
+              >
+                <i class="bi bi-person-circle" style="margin-right: 8px"></i>
+                Login
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+          <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Content Section -->
+    <main id="main">
+      {% block content %}
+      <!-- Child templates will populate this block -->
+      {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" class="footer light-background">
+      <div class="container copyright text-center mt-4">
+        <p>
+          © 2025 <span>Copyright</span>
+          <strong class="px-1 sitename">AawasNepal</strong>
+          <span>All Rights Reserved</span>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Scroll Top -->
+    <a
+      href="#"
+      id="scroll-top"
+      class="scroll-top d-flex align-items-center justify-content-center"
+    >
+      <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Preloader -->
+    <div id="preloader"></div>
+
+    <!-- Vendor JS Files -->
+    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- Main JS File -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <!-- Bootstrap JS (necessary for mobile menu toggle) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+  {%block extra_js%} {%endblock%}
+</html>

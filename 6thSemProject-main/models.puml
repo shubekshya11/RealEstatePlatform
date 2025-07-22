@@ -1,0 +1,118 @@
+@startuml
+' Entities
+class User {
+  + email: EmailField
+  + phone: CharField
+  + location: CharField
+  + username: CharField
+  + first_name: CharField
+  + last_name: CharField
+  + is_active: BooleanField
+  + is_staff: BooleanField
+  + is_superuser: BooleanField
+  + USERNAME_FIELD = 'email'
+  + objects: CustomUserManager
+  + save()
+  + __str__()
+}
+
+class Property {
+  + title: CharField
+  + city: CharField
+  + area: DecimalField
+  + bedrooms: IntegerField
+  + bathrooms: IntegerField
+  + stories: IntegerField
+  + mainroad: BooleanField
+  + guestroom: BooleanField
+  + basement: BooleanField
+  + hotwaterheating: BooleanField
+  + airconditioning: BooleanField
+  + parking: IntegerField
+  + furnishingstatus: CharField
+  + price: DecimalField
+  + property_image: ImageField
+  + is_approved: BooleanField
+  + decline_reason: TextField
+  + sale_status: CharField
+  + created_at: DateTimeField
+  + __str__()
+}
+
+class PropertyImage {
+  + image: ImageField
+  + __str__()
+}
+
+class Message {
+  + sender_name: CharField
+  + sender_email: EmailField
+  + content: TextField
+  + sent_at: DateTimeField
+  + __str__()
+}
+
+class ContactMessage {
+  + name: CharField
+  + email: EmailField
+  + subject: CharField
+  + message: TextField
+  + created_at: DateTimeField
+  + __str__()
+}
+
+class HousePricePrediction {
+  + area: FloatField
+  + stories: FloatField
+  + road_width: FloatField
+  + city: CharField
+  + road_type: CharField
+  + svm_prediction: FloatField
+  + dt_prediction: FloatField
+  + created_at: DateTimeField
+  + __str__()
+}
+
+class MLModel {
+  + name: CharField
+  + model_type: CharField
+  + model_file: FileField
+  + uploaded_at: DateTimeField
+  + is_active: BooleanField
+  + __str__()
+}
+
+' Relationships
+User "1" -- "*" Property : seller
+Property "1" -- "*" PropertyImage : images
+Property "1" -- "*" Message : messages
+User "1" -- "*" Message : sender
+
+' Inheritance
+User --|> AbstractUser
+CustomUserManager --|> BaseUserManager
+
+' Enumerations
+enum CityChoices {
+  ktm
+  bkt
+  lat
+}
+
+enum FurnishingStatus {
+  furnished
+  semi_furnished
+  unfurnished
+}
+
+enum SaleStatus {
+  available
+  sold
+}
+
+Property ..> CityChoices
+Property ..> FurnishingStatus
+Property ..> SaleStatus
+
+
+@enduml

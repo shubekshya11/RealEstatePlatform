@@ -1,0 +1,248 @@
+{% extends 'index.html' %} {% load static %}
+{% block title%}Manage Properties{%endblock%}
+{%block content %}
+<main class="main">
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1>Properties Management</h1>
+            <p class="mb-0">Manage all properties in the system</p>
+          </div>
+        </div>
+
+        <!-- Back to Dashboard Button -->
+        <div class="row mt-3">
+          <div class="col-12 text-center">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+          </div>
+        </div>
+
+        <!-- Success Messages -->
+        {% if messages %}
+        <div class="container mt-3">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Properties Table -->
+        <div class="container mt-4">
+          {% if properties %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>Title</th>
+                  <th>Area (Aana)</th>
+                  <th>Location</th>
+                  <th>Bedrooms</th>
+                  <th>Bathrooms</th>
+                  <th>Floors</th>
+                  <th>Furnished Status</th>
+                  <th>Images</th>
+                  <th>Price</th>
+                  <th>Seller</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for property in properties %}
+                <tr>
+                  <td>{{ property.title }}</td>
+                  <td>{{ property.area }}</td>
+                  <td>{{ property.city }}</td>
+                  <td>{{ property.bedrooms }}</td>
+                  <td>{{ property.bathrooms }}</td>
+                  <td>{{ property.stories }}</td>
+                  <td>{{ property.furnishingstatus }}</td>
+                  <td>
+                    {% if property.images.all %}
+                    <a href="{{ property.images.first.image.url }}" target="_blank">
+                      <img style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px;"
+                        src="{{ property.images.first.image.url }}" alt="Property Image" />
+                    </a>
+                    {% else %} No Image {% endif %}
+                  </td>
+                  <td>Rs. {{ property.price }}</td>
+                  <td>{{ property.seller.first_name }} ({{ property.seller.email }})</td>
+                  <td>
+                    {% if property.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                    {% else %}
+                    <span class="badge bg-warning">Pending</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPropertyModal"
+                      data-property-id="{{ property.id }}">
+                      Edit
+                    </button>
+                    {% if property.is_approved %}
+                    <a href="{% url 'unapprove_property' property.id %}" class="btn btn-warning btn-sm">Unapprove</a>
+                    {% else %}
+                    <a href="{% url 'approve_property' property.id %}" class="btn btn-success btn-sm">Approve</a>
+                    {% endif %}
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePropertyModal"
+                      data-property-id="{{ property.id }}" data-property-title="{{ property.title }}">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="alert alert-info">
+            <p class="mb-0">No properties found.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Edit Property Modal -->
+        <div class="modal fade" id="editPropertyModal" tabindex="-1" aria-labelledby="editPropertyModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editPropertyModalLabel">Edit Property</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="POST" id="editPropertyForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="title" class="form-label">Title</label>
+                      <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="price" class="form-label">Price</label>
+                      <input type="number" class="form-control" id="price" name="price" required>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="area" class="form-label">Area (Aana)</label>
+                      <input type="number" class="form-control" id="area" name="area" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="city" class="form-label">Location</label>
+                      <input type="text" class="form-control" id="city" name="city" required>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="bedrooms" class="form-label">Bedrooms</label>
+                      <input type="number" class="form-control" id="bedrooms" name="bedrooms" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="bathrooms" class="form-label">Bathrooms</label>
+                      <input type="number" class="form-control" id="bathrooms" name="bathrooms" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label for="stories" class="form-label">Floors</label>
+                      <input type="number" class="form-control" id="stories" name="stories" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="furnishingstatus" class="form-label">Furnishing Status</label>
+                    <select class="form-select" id="furnishingstatus" name="furnishingstatus" required>
+                      <option value="Fully Furnished">Fully Furnished</option>
+                      <option value="Semi Furnished">Semi Furnished</option>
+                      <option value="Unfurnished">Unfurnished</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Property Modal -->
+        <div class="modal fade" id="deletePropertyModal" tabindex="-1" aria-labelledby="deletePropertyModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deletePropertyModalLabel">Delete Property</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>Are you sure you want to delete property: <span id="deletePropertyTitle"></span>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deletePropertyForm">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Delete Property</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table thead th {
+    background-color: #343a40;
+    color: white;
+    border: none;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.8em;
+  }
+</style>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Edit Property Modal
+    const editPropertyModal = document.getElementById("editPropertyModal");
+    editPropertyModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+      const propertyId = button.getAttribute("data-property-id");
+      const editPropertyForm = document.getElementById("editPropertyForm");
+      editPropertyForm.action = `/property/edit/${propertyId}/`;
+    });
+
+    // Delete Property Modal
+    const deletePropertyModal = document.getElementById("deletePropertyModal");
+    deletePropertyModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+      const propertyId = button.getAttribute("data-property-id");
+      const propertyTitle = button.getAttribute("data-property-title");
+      document.getElementById("deletePropertyTitle").textContent = propertyTitle;
+      document.getElementById("deletePropertyForm").action = `/property/delete/${propertyId}/`;
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %} 

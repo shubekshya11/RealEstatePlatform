@@ -1,0 +1,12 @@
+{% autoescape off %}
+Hello {{ user.first_name }},
+
+Thank you for registering with our house price prediction platform. Please click the link below to verify your email address:
+
+http://192.168.254.16:8000/activate/{{ uid }}/{{ token }}/
+
+If you did not create an account, please ignore this email.
+
+Best regards,
+House Price Prediction Team
+{% endautoescape %} 

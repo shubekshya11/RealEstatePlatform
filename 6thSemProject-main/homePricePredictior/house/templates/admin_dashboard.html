@@ -1,0 +1,383 @@
+{% extends 'index.html' %} {% load static %} {% comment %} {% block title%}Admin
+Dashboard{%endblock %} {% block content %}
+<main class="main">
+  <div class="page-title">
+    <div class="container text-center">
+      <h1>Admin Dashboard</h1>
+      <p class="mb-0">
+        "Welcome, Admin {{ user.username }}! Manage all operations here."
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Admin Controls</h5>
+            <p class="card-text">Manage all operations and datasets.</p>
+            <!-- <a href="{% url 'admin:index' %}" class="btn btn-danger">
+              <i class="bi bi-gear-fill"></i> Admin Panel
+            </a> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endcomment %}
+
+  <!-- Properties Approval Pending -->
+  {% comment %}
+  <div class="container mt-4">
+    <h3>Pending Properties for Approval</h3>
+    <ul>
+      {% for property in properties %}
+      <li>
+        <strong>{{ property.title }}</strong> - {{ property.description }}
+        <br />
+        <a
+          href="{% url 'approve_property' property.id %}"
+          class="btn btn-success"
+        >
+          Approve
+        </a>
+      </li>
+      {% empty %}
+      <li>No pending properties.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</main>
+{% endblock %} {% endcomment %} 
+{% block title%}Admin Dashboard{%endblock%}
+{%block content %}
+<main class="main">
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1>Admin Dashboard</h1>
+            <p class="mb-0">
+              "Welcome, {{ user.username }}! Here's your dashboard."
+            </p>
+          </div>
+        </div>
+
+        <!-- Admin Navigation Cards -->
+        <div class="row mt-4">
+          <div class="col-md-3">
+            <div class="card admin-nav-card h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-hourglass-split fs-1 text-success mb-3"></i>
+                <h5 class="card-title">Pending Approvals</h5>
+                <p class="card-text">Manage property approval requests</p>
+                <a href="{% url 'pending_approvals' %}" class="btn btn-success">View Pending</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card admin-nav-card h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-people fs-1 text-success mb-3"></i>
+                <h5 class="card-title">Users</h5>
+                <p class="card-text">Manage user accounts</p>
+                <a href="{% url 'manage_users' %}" class="btn btn-success">Manage Users</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card admin-nav-card h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-house-door fs-1 text-success mb-3"></i>
+                <h5 class="card-title">Properties</h5>
+                <p class="card-text">Manage all properties</p>
+                <a href="{% url 'manage_properties' %}" class="btn btn-success">View Properties</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card admin-nav-card h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-chat-dots fs-1 text-success mb-3"></i>
+                <h5 class="card-title">Contact Messages</h5>
+                <p class="card-text">View contact form submissions</p>
+                <a href="{% url 'view_contact_messages' %}" class="btn btn-success">View Contact Messages</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-md-3">
+            <div class="card admin-nav-card h-100">
+              <div class="card-body text-center">
+                <i class="bi bi-envelope fs-1 text-success mb-3"></i>
+                <h5 class="card-title">Messages</h5>
+                <p class="card-text">View user messages</p>
+                <a href="{% url 'view_messages' %}" class="btn btn-success">View Messages</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Messages -->
+        {% if messages %}
+        <div class="container mt-3">
+          {% for message in messages %}
+          <div class="alert alert-success" role="alert">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Pending Properties Section -->
+        <div id="pending-properties" class="container mt-5 section-content" style="display: none;">
+          <h3>Pending Properties for Approval</h3>
+          {% if properties %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-success">
+                <tr>
+                  <th>Title</th>
+                  <th>Area (Aana)</th>
+                  <th>Location</th>
+                  <th>Bedrooms</th>
+                  <th>Bathrooms</th>
+                  <th>Floors</th>
+                  <th>Furnished Status</th>
+                  <th>Images</th>
+                  <th>Price</th>
+                  <th>Seller</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for property in properties %}
+                <tr>
+                  <td>{{ property.title }}</td>
+                  <td>{{ property.area }}</td>
+                  <td>{{ property.city }}</td>
+                  <td>{{ property.bedrooms }}</td>
+                  <td>{{ property.bathrooms }}</td>
+                  <td>{{ property.stories }}</td>
+                  <td>{{ property.furnishingstatus }}</td>
+                  <td>
+                    {% if property.images.all %}
+                    <a href="{{ property.images.first.image.url }}" target="_blank">
+                      <img style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px;"
+                        src="{{ property.images.first.image.url }}" alt="Property Image" />
+                    </a>
+                    {% else %} No Image {% endif %}
+                  </td>
+                  <td>Rs. {{ property.price }}</td>
+                  <td>{{ property.seller.first_name }} ({{ property.seller.email }})</td>
+                  <td>
+                    <a href="{% url 'approve_property' property.id %}" class="btn btn-success btn-sm">
+                      Approve
+                    </a>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#declineModal"
+                      data-property-id="{{ property.id }}" data-property-title="{{ property.title }}">
+                      Decline
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>No pending properties.</p>
+          {% endif %}
+        </div>
+
+        <!-- Users Section -->
+        <div id="users" class="container mt-5 section-content" style="display: none;">
+          <h3>User Management</h3>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-success">
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.first_name }}</td>
+                  <td>{{ user.last_name }}</td>
+                  <td>
+                    {% if user.is_active %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-danger">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'edit_user' user.id %}" class="btn btn-success btn-sm">Edit</a>
+                    {% if user.is_active %}
+                    <form method="POST" action="{% url 'deactivate_user' user.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm">Deactivate</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{% url 'activate_user' user.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm">Activate</button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'delete_user' user.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Properties Section -->
+        <div id="properties" class="container mt-5 section-content" style="display: none;">
+          <h3>Properties Management</h3>
+          <!-- Add your properties management content here -->
+        </div>
+
+        <!-- Messages Section -->
+        <div id="messages" class="container mt-5 section-content" style="display: none;">
+          <h3>User Messages</h3>
+          <!-- Add your messages content here -->
+        </div>
+
+        <!-- Contact Messages Section (for future use if needed) -->
+        <div id="contact-messages" class="container mt-5 section-content" style="display: none;">
+          <h3>Contact Messages</h3>
+          <!-- Add your contact messages content here -->
+        </div>
+
+        <!-- Decline Modal -->
+        <div class="modal fade" id="declineModal" tabindex="-1" aria-labelledby="declineModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="declineModalLabel">Decline Property: <span id="propertyTitle"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="POST" id="declineForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="decline_reason">Reason for Declining:</label>
+                    <textarea class="form-control" id="decline_reason" name="decline_reason" rows="3" required></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-success">Decline Property</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .admin-nav-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .admin-nav-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-nav-card .card-body {
+    padding: 2rem 1rem;
+  }
+
+  .admin-nav-card i {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .admin-nav-card .btn {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table thead th {
+    background-color: #198754;
+    color: white;
+    border: none;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(25, 135, 84, 0.05);
+  }
+
+  .section-content {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const declineModal = document.getElementById("declineModal");
+    const declineForm = document.getElementById("declineForm");
+    const propertyTitleElement = document.getElementById("propertyTitle");
+    declineModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+      const propertyId = button.getAttribute("data-property-id");
+      const propertyTitle = button.getAttribute("data-property-title");
+      propertyTitleElement.textContent = propertyTitle;
+      declineForm.action = `/decline_property/${propertyId}/`;
+    });
+  });
+
+  function toggleSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.section-content').forEach(section => {
+      section.style.display = 'none';
+    });
+    
+    // Show the selected section
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+      selectedSection.style.display = 'block';
+    }
+  }
+</script>
+{% endblock %}
+{% endblock %}

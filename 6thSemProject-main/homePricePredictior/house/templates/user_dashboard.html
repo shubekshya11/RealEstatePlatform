@@ -1,0 +1,121 @@
+{% extends 'index.html' %} {% load static %}
+{% block title %}User Dashboard{%endblock %}
+{% block content %}
+<main class="main">
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1>User Dashboard</h1>
+            <p class="mb-0">
+              "Welcome, {{ user.username }}! Here's your dashboard."
+            </p>
+          </div>
+
+          <!-- User Information -->
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">User Profile</h5>
+                <p class="card-text">
+                  <strong>Username:</strong> {{ user.first_name }}
+                </p>
+                <p class="card-text">
+                  <strong>Email:</strong> {{ user.email }}
+                </p>
+                <p class="card-text">
+                  <strong>Joined:</strong> {{ user.date_joined|date:"F d, Y" }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if messages %} {% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %} {% endif %}
+
+  <div class="container mt-4">
+    <h3>Your Property Listings</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Location</th>
+          <th>Price</th>
+          <th>Image</th>
+          <th>Status</th>
+          <th>Created At</th>
+          <th>Sale Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for property in user_properties %}
+        <tr>
+          <td>{{ property.title }}</td>
+          <td>{{ property.city }}</td>
+          <td>Rs. {{ property.price }}</td>
+          <td>
+            {% if property.images.all %}
+            <a href="{{ property.images.first.image.url }}" target="_blank">
+              <img
+                style="
+                  width: 70px;
+                  height: 70px;
+                  object-fit: cover;
+                  border-radius: 10px;
+                "
+                src="{{ property.images.first.image.url }}"
+                alt="Property Image"
+              />
+            </a>
+            {% else %} No Image {% endif %}
+          </td>
+          <td>
+            {% if property.is_approved %}
+            <span class="badge bg-success">Approved</span>
+            {% elif property.decline_reason %}
+            <span class="badge bg-danger">Declined</span>
+            {% else %}
+            <span class="badge bg-warning">Pending</span>
+            {% endif %}
+          </td>
+          <td>{{ property.created_at|date:"F d, Y" }}</td>
+          <td>
+            {% if property.sale_status == 'available' %}
+            <span class="badge bg-info">Available</span>
+            {% else %}
+            <span class="badge bg-secondary">Sold</span>
+            {% endif %}
+          </td>
+          <td>
+            <a
+              href="{% url 'edit_property' property.id %}"
+              class="btn btn-primary btn-sm"
+            >
+              Edit
+            </a>
+            <a
+              href="{% url 'delete_property' property.id %}"
+              class="btn btn-danger btn-sm"
+            >
+              Delete
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">
+            You have not listed any properties yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+{% endblock %}
