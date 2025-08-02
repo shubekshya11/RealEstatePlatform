@@ -173,11 +173,18 @@
             />
             {% endif %}
             <div class="card-body" style="flex-grow: 1; padding: 1rem">
-              <span
-                class="sale-rent"
-                style="display: block; margin-bottom: 10px"
-                >Sale | Rs. {{ property.price }}</span
-              >
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span
+                  class="sale-rent"
+                  style="display: block; margin-bottom: 10px"
+                  >Sale | Rs. {{ property.price }}</span
+                >
+                {% if property.sale_status == 'available' %}
+                <span class="badge bg-success">Available</span>
+                {% else %}
+                <span class="badge bg-secondary">Sold</span>
+                {% endif %}
+              </div>
               <h3 style="font-size: 1.2rem; margin-bottom: 10px">
                 <a
                   href="{% url 'property_detail' property.id %}"

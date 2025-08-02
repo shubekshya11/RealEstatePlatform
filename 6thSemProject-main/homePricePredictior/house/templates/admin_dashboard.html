@@ -119,6 +119,7 @@ Dashboard{%endblock %} {% block content %}
               </div>
             </div>
           </div>
+
         </div>
 
         <!-- Success Messages -->
@@ -165,10 +166,14 @@ Dashboard{%endblock %} {% block content %}
                   <td>{{ property.furnishingstatus }}</td>
                   <td>
                     {% if property.images.all %}
-                    <a href="{{ property.images.first.image.url }}" target="_blank">
-                      <img style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px;"
-                        src="{{ property.images.first.image.url }}" alt="Property Image" />
-                    </a>
+                      <div style="display: flex; flex-wrap: wrap;">
+                        {% for img in property.images.all %}
+                          <a href="{{ img.image.url }}" target="_blank">
+                            <img style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 5px; margin-bottom: 5px;"
+                              src="{{ img.image.url }}" alt="Property Image" />
+                          </a>
+                        {% endfor %}
+                      </div>
                     {% else %} No Image {% endif %}
                   </td>
                   <td>Rs. {{ property.price }}</td>

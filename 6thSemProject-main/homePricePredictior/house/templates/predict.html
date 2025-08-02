@@ -103,26 +103,6 @@
               </div>
               {% endif %}
 
-              {% if recommended_houses %}
-              <div class="card mt-4">
-                <div class="card-body">
-                  <h5 class="card-title">Similar Houses You Might Like</h5>
-                  <ul class="list-group list-group-flush">
-                    {% for house in recommended_houses %}
-                      <li class="list-group-item">
-                        <strong>{{ house.title|default:'House' }}</strong> - Rs. {{ house.price|floatformat:0 }}<br>
-                        {{ house.location|default:'Location N/A' }} | {{ house.bedrooms|default:'?' }} BR | {{ house.area|default:'?' }} sq.ft.
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              </div>
-              {% elif prediction_svm %}
-                <div class="mt-4">
-                  <em>No similar houses found in this price range.</em>
-                </div>
-              {% endif %}
-
               {% if error %}
               <div class="alert alert-danger mt-4">
                 {{ error }}

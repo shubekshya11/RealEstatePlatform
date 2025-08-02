@@ -38,6 +38,7 @@ urlpatterns = [
     path('dashboard/delete-user/<int:user_id>/', delete_user, name='delete_user'),
     path('dashboard/add-user/', add_user, name='add_user'),
     path('dashboard/unapprove-property/<int:property_id>/', unapprove_property, name='unapprove_property'),
+    path('dashboard/update-sale-status/<int:property_id>/', update_property_sale_status, name='update_property_sale_status'),
     path('dashboard/reply-message/<int:message_id>/', reply_message, name='reply_message'),
     path('dashboard/delete-message/<int:message_id>/', delete_message, name='delete_message'),
     path('dashboard/view-contact-messages/', view_contact_messages, name='view_contact_messages'),

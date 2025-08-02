@@ -49,7 +49,8 @@
                   <th>Images</th>
                   <th>Price</th>
                   <th>Seller</th>
-                  <th>Status</th>
+                  <th>Approval Status</th>
+                  <th>Sale Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -65,10 +66,14 @@
                   <td>{{ property.furnishingstatus }}</td>
                   <td>
                     {% if property.images.all %}
-                    <a href="{{ property.images.first.image.url }}" target="_blank">
-                      <img style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px;"
-                        src="{{ property.images.first.image.url }}" alt="Property Image" />
-                    </a>
+                      <div style="display: flex; flex-wrap: wrap;">
+                        {% for img in property.images.all %}
+                          <a href="{{ img.image.url }}" target="_blank">
+                            <img style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 5px; margin-bottom: 5px;"
+                              src="{{ img.image.url }}" alt="Property Image" />
+                          </a>
+                        {% endfor %}
+                      </div>
                     {% else %} No Image {% endif %}
                   </td>
                   <td>Rs. {{ property.price }}</td>
@@ -81,6 +86,13 @@
                     {% endif %}
                   </td>
                   <td>
+                    {% if property.sale_status == 'available' %}
+                    <span class="badge bg-info">Available</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Sold</span>
+                    {% endif %}
+                  </td>
+                  <td>
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPropertyModal"
                       data-property-id="{{ property.id }}">
                       Edit
@@ -89,6 +101,24 @@
                     <a href="{% url 'unapprove_property' property.id %}" class="btn btn-warning btn-sm">Unapprove</a>
                     {% else %}
                     <a href="{% url 'approve_property' property.id %}" class="btn btn-success btn-sm">Approve</a>
+                    {% endif %}
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#saleStatusModal"
+                      data-property-id="{{ property.id }}" data-property-title="{{ property.title }}" 
+                      data-current-status="{{ property.sale_status }}">
+                      Update Sale Status
+                    </button>
+                    {% if property.sale_status == 'available' %}
+                    <form method="POST" action="{% url 'update_property_sale_status' property.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="sale_status" value="sold">
+                      
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{% url 'update_property_sale_status' property.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="sale_status" value="available">
+                      
+                    </form>
                     {% endif %}
                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePropertyModal"
                       data-property-id="{{ property.id }}" data-property-title="{{ property.title }}">
@@ -171,6 +201,37 @@
           </div>
         </div>
 
+        <!-- Sale Status Update Modal -->
+        <div class="modal fade" id="saleStatusModal" tabindex="-1" aria-labelledby="saleStatusModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="saleStatusModalLabel">Update Sale Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form method="POST" id="saleStatusForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <p>Update sale status for property: <strong id="saleStatusPropertyTitle"></strong></p>
+                  <p>Current status: <span id="currentSaleStatus" class="badge"></span></p>
+                  <div class="mb-3">
+                    <label for="sale_status" class="form-label">New Sale Status</label>
+                    <select class="form-select" id="sale_status" name="sale_status" required>
+                      <option value="available">Available</option>
+                      <option value="sold">Sold</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete Property Modal -->
         <div class="modal fade" id="deletePropertyModal" tabindex="-1" aria-labelledby="deletePropertyModalLabel"
           aria-hidden="true">
@@ -202,7 +263,8 @@
 <style>
   .table-responsive {
     border-radius: 10px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .table thead th {
@@ -231,6 +293,19 @@
       const propertyId = button.getAttribute("data-property-id");
       const editPropertyForm = document.getElementById("editPropertyForm");
       editPropertyForm.action = `/property/edit/${propertyId}/`;
+    });
+
+    // Sale Status Update Modal
+    const saleStatusModal = document.getElementById("saleStatusModal");
+    saleStatusModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+      const propertyId = button.getAttribute("data-property-id");
+      const propertyTitle = button.getAttribute("data-property-title");
+      const currentStatus = button.getAttribute("data-current-status");
+
+      document.getElementById("saleStatusPropertyTitle").textContent = propertyTitle;
+      document.getElementById("currentSaleStatus").textContent = currentStatus;
+      document.getElementById("saleStatusForm").action = `/dashboard/update-sale-status/${propertyId}/`;
     });
 
     // Delete Property Modal

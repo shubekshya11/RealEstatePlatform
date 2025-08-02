@@ -18,7 +18,6 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .utils import recommend_similar_properties
-from house.models import Property
 import re
 import os
 import numpy as np
@@ -202,7 +201,7 @@ def home(request):
     query_title = request.GET.get('title', '')
     query_city = request.GET.get('city', '')
     
-    properties = Property.objects.filter(is_approved=True)
+    properties = Property.objects.filter(is_approved=True, sale_status='available')
 
     if query_title:
         properties = properties.filter(title__icontains=query_title)
@@ -282,7 +281,7 @@ def view_dataset(request, filename):
         return redirect('admin_dashboard')
     
 def buyer(request):
-    properties = Property.objects.filter(is_approved=True).order_by('-created_at')
+    properties = Property.objects.filter(is_approved=True, sale_status='available').order_by('-created_at')
     return render(request, 'buyer.html', {
         'properties': properties
     })
@@ -378,6 +377,19 @@ def seller_view(request):
         try:
             if not title or not city or not area or not bedrooms or not bathrooms or not stories or not price:
                 raise ValidationError('Please fill out all required fields.')
+
+            # Convert to numbers and validate positivity
+            try:
+                area_val = float(area)
+                bedrooms_val = int(bedrooms)
+                bathrooms_val = int(bathrooms)
+                stories_val = int(stories)
+                price_val = float(price)
+            except ValueError:
+                raise ValidationError('Area, Bedrooms, Bathrooms, Floors, and Price must be valid numbers.')
+
+            if area_val <= 0 or bedrooms_val <= 0 or bathrooms_val <= 0 or stories_val <= 0 or price_val <= 0:
+                raise ValidationError('Area, Bedrooms, Bathrooms, Floors, and Price must all be positive numbers.')
             
     
             property = Property(
@@ -424,6 +436,44 @@ def update_sale_status(request, property_id):
         else:
             messages.error(request, 'Invalid sale status!')
     return redirect('user_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser)
+def update_property_sale_status(request, property_id):
+    """Admin updates the sale status of a property"""
+    property_obj = get_object_or_404(Property, id=property_id)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('sale_status')
+        if new_status in dict(Property.SALE_STATUS_CHOICES):
+            old_status = property_obj.sale_status
+            property_obj.sale_status = new_status
+            property_obj.save()
+            
+            # Send notification email to seller about status change
+            current_site = get_current_site(request)
+            mail_subject = f"Property Sale Status Updated - {property_obj.title}"
+            message = render_to_string('email/sale_status_notification.html', {
+                'user': property_obj.seller,
+                'property': property_obj,
+                'old_status': old_status,
+                'new_status': new_status,
+                'domain': current_site.domain,
+                'protocol': 'https' if request.is_secure() else 'http',
+            })
+            
+            email = EmailMessage(
+                mail_subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [property_obj.seller.email]
+            )
+            email.send()
+            
+            messages.success(request, f"Property '{property_obj.title}' sale status updated from '{old_status}' to '{new_status}' successfully!")
+        else:
+            messages.error(request, 'Invalid sale status!')
+    
+    return redirect('manage_properties')
 
 def property_detail(request, property_id):
     property_obj = get_object_or_404(Property, id=property_id)
@@ -558,12 +608,19 @@ def edit_property(request, property_id):
     })
 
 def delete_property(request, property_id):
-    property = get_object_or_404(Property, id=property_id, seller=request.user)
+    if request.user.is_superuser:
+        property = get_object_or_404(Property, id=property_id)
+    else:
+        property = get_object_or_404(Property, id=property_id, seller=request.user)
 
     if request.method == 'POST':
         property.delete()
         messages.success(request, f"Property '{property.title}' deleted successfully!")
-        return redirect('user_dashboard')
+        # Redirect based on user type
+        if request.user.is_superuser:
+            return redirect('manage_properties')
+        else:
+            return redirect('user_dashboard')
 
     return render(request, 'confirm_delete.html', {'property': property})
 
@@ -891,10 +948,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from house.models import Property
 
 def recommend_similar_properties(target_property, top_n=4, area_tolerance=0.5, price_tolerance=0.5):
-    # Only consider properties in the same city
+    # Only consider properties in the same city that are available
     queryset = Property.objects.filter(
         is_approved=True,
-        city=target_property.city
+        city=target_property.city,
+        sale_status='available'
     ).exclude(id=target_property.id)
 
     if not queryset.exists():
@@ -902,15 +960,15 @@ def recommend_similar_properties(target_property, top_n=4, area_tolerance=0.5, p
     
     #TO recommend on basis of area and price
 
-    # min_area = float(target_property.area) * (1 - area_tolerance)
-    # max_area = float(target_property.area) * (1 + area_tolerance)
-    # min_price = float(target_property.price) * (1 - price_tolerance)
-    # max_price = float(target_property.price) * (1 + price_tolerance)
+    min_area = float(target_property.area) * (1 - area_tolerance)
+    max_area = float(target_property.area) * (1 + area_tolerance)
+    min_price = float(target_property.price) * (1 - price_tolerance)
+    max_price = float(target_property.price) * (1 + price_tolerance)
 
-    # queryset = queryset.filter(
-    #     area__gte=min_area, area__lte=max_area,
-    #     price__gte=min_price, price__lte=max_price
-    # )
+    queryset = queryset.filter(
+        area__gte=min_area, area__lte=max_area,
+        price__gte=min_price, price__lte=max_price
+    )
 
     if not queryset.exists():
         return []

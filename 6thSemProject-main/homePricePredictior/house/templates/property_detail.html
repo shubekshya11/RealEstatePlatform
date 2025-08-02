@@ -35,13 +35,27 @@
         <div class="col-lg-8" data-aos="fade-up">
           <div class="portfolio-description">
             {% if property.images.all %}
-            <a target="_blank" href="{{ property.images.first.image.url }}">
-              <img style="height: 500px; width: 500px; object-fit: cover; border-radius: 20px;"
-                src="{{ property.images.first.image.url }}" alt="House Image" class="img-fluid mb-4" />
-            </a>
+              <div class="property-images-gallery mb-4">
+                {% for img in property.images.all %}
+                  <a target="_blank" href="{{ img.image.url }}">
+                    <img style="height: 150px; width: 150px; object-fit: cover; border-radius: 10px; margin-right: 10px;"
+                      src="{{ img.image.url }}" alt="House Image" class="img-fluid" />
+                  </a>
+                {% endfor %}
+              </div>
             {% endif %}
 
             <h2>Property Details:</h2>
+            
+            <!-- Sale Status Badge -->
+            <div class="mb-3">
+              {% if property.sale_status == 'available' %}
+              <span class="badge bg-success fs-6">Available for Sale</span>
+              {% else %}
+              <span class="badge bg-secondary fs-6">Sold</span>
+              {% endif %}
+            </div>
+            
             <div class="row">
               <div class="col-md-6">
                 <p><strong>Price:</strong> Rs.{{ property.price }}</p>
@@ -60,7 +74,13 @@
                 <p><strong>Air Conditioning:</strong> {% if property.airconditioning %}Yes{% else %}No{% endif %}</p>
                 <p><strong>Parking Space:</strong> {{ property.parking }}</p>
                 <p><strong>Furnishing Status:</strong> {{ property.furnishingstatus }}</p>
-                <p><strong>Sale Status:</strong> {{ property.sale_status }}</p>
+                <p><strong>Sale Status:</strong> 
+                  {% if property.sale_status == 'available' %}
+                  <span class="badge bg-success">Available</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Sold</span>
+                  {% endif %}
+                </p>
               </div>
             </div>
           </div>
@@ -82,7 +102,11 @@
         <div class="col-lg-8" data-aos="fade-up" style="margin-top: 2rem;">
           <div class="portfolio-description">
             <h3>Contact the Seller</h3>
-            {% if user.email == property.seller.email %}
+            {% if property.sale_status == 'sold' %}
+            <div class="alert alert-warning">
+              <strong>This property has been sold.</strong> You can no longer contact the seller about this property.
+            </div>
+            {% elif user.email == property.seller.email %}
             <div class="alert alert-info">
               You cannot contact yourself regarding your own property.
             </div>
@@ -133,7 +157,14 @@
                 {% endif %}
               </a>
               <div class="card-body">
-                <h5 class="card-title">{{ rec_prop.title }}</h5>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="card-title">{{ rec_prop.title }}</h5>
+                  {% if rec_prop.sale_status == 'available' %}
+                  <span class="badge bg-success">Available</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Sold</span>
+                  {% endif %}
+                </div>
                 <p class="card-text">
                   Price: Rs.{{ rec_prop.price }}<br />
                   City: {{ rec_prop.city }}<br />
